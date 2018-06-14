@@ -20,7 +20,7 @@ This is done in three steps:
 
 ### Step 1: assign background sources to the lenses
 
-The file `examples/sdss_legacy_hscoverlap_mcut11.0.cat` is a catalog of massive quiescent galaxies from the SDSS legacy spectroscopic sample. It includes stellar masses, obtained from the MPA-JHU catalog, corrected to Chabrier IMF. The sample is the same used in [Sonnenfeld et al. (2018)](https://arxiv.org/abs/1801.01883).
+The file `examples/sdss_legacy_hscoverlap_mcut11.0.cat` is a catalog of massive quiescent galaxies from the SDSS legacy spectroscopic sample. It includes stellar masses, obtained from the MPA-JHU catalog, corrected to a Chabrier IMF. The sample is the same used in [Sonnenfeld et al. (2018)](https://arxiv.org/abs/1801.01883).
 
 The script `examples/assign_sources.py` reads the shape measurement catalog and matches background sources to the galaxies in the lens sample. (This repository does NOT provide the shape catalog). 
 
@@ -35,5 +35,5 @@ This script takes a few hours to run as it is. You might want to split the sampl
 ### Step 3: infer the hyper-parameters
 
 The script `examples/infer_nfw_shmr.py` selects a subsample of lenses within a redshift interval, then fits for the hyper-parameters describing the SHMR and the concentration distribution of the sample. This is done while marginalizing over the values of stellar mass, halo mass and concentration of individual lenses. This marginalization is carried out by Monte Carlo integration and importance sampling, using the MCMC chains of individual lenses obtained previously.
-This script should take around one hour to run. The end product is a pickled object containing the MCMC chain.
+This script should take around one hour to run. The end product is a pickled object containing the MCMC chain, as returned by emcee.
 
