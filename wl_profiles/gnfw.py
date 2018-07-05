@@ -59,7 +59,7 @@ def fast_Sigma(R, rs, beta):
     Sigma = Sigma_grid.eval(sample)/(R/rs)/rs**2
     return Sigma
 
-def make_M2d_Rbetam3_grid(Nr=100, Nb=28, Rmin=0.01, Rmax=100.):
+def make_M2d_Rbetam3_grid(Nr=100, Nb=28, Rmin=0.001, Rmax=100.):
     #this code calculates the quantity M2d(R, rs=1, beta)*R**(3-beta) on a grid of values of R between Rmin and Rmax, and values of the inner slope beta between 0.1 and 2.8.
     #the reason for the multiplication by R**(3-beta) is to make interpolation easier by having a function as flat as possible.
 
