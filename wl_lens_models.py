@@ -392,12 +392,12 @@ class NFWdeV:
     def mu(self, theta, z):
         return ((1 - self.kappa(theta, z))**2 - self.gammat(theta, z)**2)**(-1)
 
-    def rein(self, z, xtol=1e-8):
+    def rein(self, z, xtol=1e-6, xmin=1e-6, xmax=1.):
         bfunc = lambda theta: theta - self.alpha(theta, z)
-        if bfunc(1e-8) > 0:
+        if bfunc(xmin)*bfunc(xmax) > 0:
             return 0.
         else:
-            return brentq(bfunc, 1e-8, 1., xtol=xtol)
+            return brentq(bfunc, xmin, xmax, xtol=xtol)
 
     def gcompl(self, r, phi, z):
         return (1. - self.kappa(r, z))**(-1)*(self.gamma1(r, phi, z) + 1j*self.gamma2(r, phi, z))
