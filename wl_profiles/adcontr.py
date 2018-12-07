@@ -38,7 +38,7 @@ def get_light_m3d_spline(mstar, reff, nser, rmin=1e-4, rmax=1e4, nr=101):
 def get_m3d_spline(mstar, reff, nser, mvir, rs, cvir, nu, rmin=0.001, rmax=1000., nr=1001, nr_light=101, m3d_light_spline=None):
 
     if m3d_light_spline is None:
-        m3d_light_spline = get_m3d_light_spline(mstar, reff, nser, nr=nr_light)
+        m3d_light_spline = get_light_m3d_spline(mstar, reff, nser, nr=nr_light)
 
     # defines grid of shells used to calculate 3d profile of fully adiabatically contracted halo
     nr = 1001
