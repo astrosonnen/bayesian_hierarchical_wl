@@ -9,6 +9,7 @@ h = 0.7
 omegaL = 0.7
 omegaM = 0.3
 omegar = 0.
+yr = 365.*3600.*24.
 
 default_cosmo = {'omegaM': omegaM, 'omegaL': omegaL, 'omegar': omegar, 'h': h}
 
@@ -55,4 +56,19 @@ def rhoc(z, cosmo=default_cosmo):
 
     return 3*(H0*cosmo['h']*10**5/Mpc)**2/(8.*np.pi*G)*(cosmo['omegaM']*(1+z)**3 + cosmo['omegaL']) / M_Sun * Mpc**3
 
+def lookback(z, cosmo=default_cosmo):
+    for par in default_cosmo:
+        if not par in cosmo:
+            cosmo[par] = default_cosmo[par]
+    omegak = 1. - cosmo['omegaM'] - cosmo['omegaL']
+    I = quad(lambda z: 1./(1.+z)/(cosmo['omegaL'] + cosmo['omegaM']*(1+z)**3 + cosmo['omegar']*(1+z)**4 + omegak*(1+z)**2)**0.5, 0., z)
+    return I[0]/(H0*cosmo['h']*10.**5*yr/Mpc)
+
+def uniage(z, cosmo=default_cosmo):
+    for par in default_cosmo:
+        if not par in cosmo:
+            cosmo[par] = default_cosmo[par]
+    omegak = 1. - cosmo['omegaM'] - cosmo['omegaL']
+    I = quad(lambda z: 1./(1.+z)/(cosmo['omegaL'] + cosmo['omegaM']*(1+z)**3 + cosmo['omegar']*(1+z)**4 + omegak*(1+z)**2)**0.5, z, np.inf)
+    return I[0]/(H0*cosmo['h']*10.**5*yr/Mpc)
 
