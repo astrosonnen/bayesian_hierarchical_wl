@@ -18,7 +18,7 @@ We assume that:
 3. The mass density profile of each lens can be described with a spherically symmetric Navarro Frenk & White (NFW) profile, plus a stellar component in the center.
 
 Given these assumptions, each lens can be described with three parameters, for example, the stellar mass, halo mass and halo concentration: $M_*, M_{200}, c_{200}$.
-We refer to these collectively as the *individual object parameters*, $\pxi$.
+We refer to these collectively as the *individual object parameters*, $\psi$.
 
 We assume that these parameters are drawn from a distribution describing the population of lenses, specified by a set of *hyper-parameters*, $\eta$. This distribution acts as a prior on the individual object parameters:
 $${\rm P}(\psi) = {\rm P}(\psi|\eta)$$
