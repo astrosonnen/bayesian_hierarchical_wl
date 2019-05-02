@@ -35,6 +35,10 @@ The script `examples/get_wl_likelihood_grids.py` loops over the lenses and calcu
 
 ### Step 3: infer the hyper-parameters
 
-The script `examples/infer_nfw_shmr.py` fits for the hyper-parameters describing the SHMR and the concentration distribution of the lens sample. This is done while marginalizing over the values of stellar mass, halo mass and concentration of individual lenses. This marginalization is carried out by Monte Carlo integration, using the grids of the weak lensing likelihood for individual lenses obtained previously.
-This script should take around one hour to run. The end product is an .hdf5 file containing the MCMC chain, as returned by emcee.
+The script `examples/infer_nfw_shmr.py` fits for the hyper-parameters describing the SHMR and the concentration distribution of the lens sample. 
+The model assumes a Gaussian distribution in log stellar mass, a Gaussian distribution in log halo mass with mean that scales with stellar mass, a Gaussian distribution in log concentration.
+The marginalization over individual lens parameters is carried out by Monte Carlo integration, using the grids of the weak lensing likelihood obtained previously.
+This script should take a few hours to run. It can be made faster by running emcee in multi-thread mode: you'll need to add `threads=Nthread` while calling `emcee.EnsampleSampler` in line 155. 
+The end product is an .hdf5 file containing the MCMC chain, as returned by emcee.
+
 
