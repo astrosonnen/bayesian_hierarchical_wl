@@ -11,23 +11,7 @@ To use, add this directory to your `PYTHONPATH` environment variable.
 
 ## The method in a nutshell
 
-We have a sample of lenses (e.g. massive galaxies) of which we wish to infer the distribution of dark matter halo masses (and maybe concentrations).
-We assume that:
-1. Each lens dominates the weak lensing signal on background sources around it.
-2. The center of each lens is known exactly.
-3. The mass density profile of each lens can be described with a spherically symmetric Navarro Frenk & White (NFW) profile, plus a stellar component in the center.
-
-Given these assumptions, each lens can be described with three parameters, for example, the stellar mass, halo mass and halo concentration: $M_*, M_{200}, c_{200}$.
-We refer to these collectively as the *individual object parameters*, $\psi$.
-
-We assume that these parameters are drawn from a distribution describing the population of lenses, specified by a set of *hyper-parameters*, $\eta$. This distribution acts as a prior on the individual object parameters:
-$${\rm P}(\psi) = {\rm P}(\psi|\eta)$$
-In practice, the hyper-parameters $\eta$ will be things like the average halo mass, the halo mass-stellar mass correlation coefficient, the intrinsic scatter in halo mass, etc. (see subsection 3.2 of Sonnenfeld & Leauthaud 2018).
-
-We want to infer the posterior probability distribution of the hyper-parametrs given the data, which consists of a set of shape measurements of lensed background sources and stellar mass measurements of the central galaxies of each halo. Using Bayes theorem, this is given by
-
-$${\rm P}(\eta|d) \propto {\rm P}(\eta){\rm P}(d|\eta)$$
-
+Please refer to [this](method_description.ipynb) notebook.
 
 ## Example 1: SHMR and concentration of massive quiescent galaxies from the SDSS legacy sample
 
