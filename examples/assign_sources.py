@@ -61,7 +61,7 @@ def get_wl_field(ra, dec):
     else:
         return None
 
-source_file = h5py.File('camira_specz_sources.hdf5', 'w')
+source_file = h5py.File('sources.hdf5', 'w')
 
 for i in range(ngal):
 
@@ -77,59 +77,60 @@ for i in range(ngal):
         
         keep = (source_dists < theta_max[i]) & (source_dists > theta_min[i]) & (wl_table[field]['mizuki_photoz_err95_min'].value > zd[i])
     
-        group.create_dataset('r', data=source_dists[keep])
-        group.create_dataset('z', data=wl_table[field]['mizuki_photoz_median'][keep])
-        group.create_dataset('z_16', data=wl_table[field]['mizuki_photoz_err68_min'][keep])
-        group.create_dataset('z_84', data=wl_table[field]['mizuki_photoz_err68_max'][keep])
-        group.create_dataset('rms_e', data=calib_file[field]['ishape_hsm_regauss_derived_rms_e'][keep])
-        group.create_dataset('sigma_e', data=calib_file[field]['ishape_hsm_regauss_derived_sigma_e'][keep])
-        group.create_dataset('m_bias', data=calib_file[field]['ishape_hsm_regauss_derived_shear_bias_m'][keep])
-    
-        sel_e1 = wl_table[field]['ishape_hsm_regauss_e1'][keep]
-        sel_e2 = -wl_table[field]['ishape_hsm_regauss_e2'][keep]
-    
-        sel_c1 = calib_file[field]['ishape_hsm_regauss_derived_shear_bias_c1'][keep]
-        sel_c2 = -calib_file[field]['ishape_hsm_regauss_derived_shear_bias_c2'][keep]
-    
-        sel_ra = wl_table[field]['ira'][keep]
-        sel_dec = wl_table[field]['idec'][keep]
-     
-        dra = (sel_ra - ra[i])/np.cos(np.deg2rad(dec[i]))
-        ddec = sel_dec - dec[i]
-    
-        phis = np.arctan(dra/ddec)
-        phis[ddec<0.] = phis[ddec<0.] + np.pi
-        phis[phis<0.] += 2.*np.pi
-    
-        group.create_dataset('phi', data=phis)
-    
-        cosphi = np.cos(phis)
-        sinphi = np.sin(phis)
-    
-        sin2phi = 2.*cosphi*sinphi
-        cos2phi = cosphi**2 - sinphi**2
-    
-        group.create_dataset('et', data=sel_e1*cos2phi + sel_e2*sin2phi)
-        group.create_dataset('er', data=-sel_e1*sin2phi + sel_e2*cos2phi)
-    
-        group.create_dataset('ct_bias', data=sel_c1*cos2phi + sel_c2*sin2phi)
-        group.create_dataset('cr_bias', data=-sel_c1*sin2phi + sel_c2*cos2phi)
-     
-        # calculates critical densities
-    
-        nsource = keep.sum()
-        ds = np.zeros(nsource)
-        dds = np.zeros(nsource)
-    
-        s_cr = np.zeros(nsource)
-    
-        dd = wl_cosmology.Dang(zd[i])
-    
-        for j in range(nsource):
-            ds[j] = wl_cosmology.Dang(group['z'][j])
-            dds[j] = wl_cosmology.Dang(zd[i], group['z'][j])
-    
-        s_cr = c**2/(4.*np.pi*G)*ds/dds/dd*Mpc/M_Sun
-    
-        group.create_dataset('s_cr', data=s_cr)
+        if keep.sum() > 0:
+            group.create_dataset('r', data=source_dists[keep])
+            group.create_dataset('z', data=wl_table[field]['mizuki_photoz_median'][keep])
+            group.create_dataset('z_16', data=wl_table[field]['mizuki_photoz_err68_min'][keep])
+            group.create_dataset('z_84', data=wl_table[field]['mizuki_photoz_err68_max'][keep])
+            group.create_dataset('rms_e', data=calib_file[field]['ishape_hsm_regauss_derived_rms_e'][keep])
+            group.create_dataset('sigma_e', data=calib_file[field]['ishape_hsm_regauss_derived_sigma_e'][keep])
+            group.create_dataset('m_bias', data=calib_file[field]['ishape_hsm_regauss_derived_shear_bias_m'][keep])
+        
+            sel_e1 = wl_table[field]['ishape_hsm_regauss_e1'][keep]
+            sel_e2 = -wl_table[field]['ishape_hsm_regauss_e2'][keep]
+        
+            sel_c1 = calib_file[field]['ishape_hsm_regauss_derived_shear_bias_c1'][keep]
+            sel_c2 = -calib_file[field]['ishape_hsm_regauss_derived_shear_bias_c2'][keep]
+        
+            sel_ra = wl_table[field]['ira'][keep]
+            sel_dec = wl_table[field]['idec'][keep]
+         
+            dra = (sel_ra - ra[i])/np.cos(np.deg2rad(dec[i]))
+            ddec = sel_dec - dec[i]
+        
+            phis = np.arctan(dra/ddec)
+            phis[ddec<0.] = phis[ddec<0.] + np.pi
+            phis[phis<0.] += 2.*np.pi
+        
+            group.create_dataset('phi', data=phis)
+        
+            cosphi = np.cos(phis)
+            sinphi = np.sin(phis)
+        
+            sin2phi = 2.*cosphi*sinphi
+            cos2phi = cosphi**2 - sinphi**2
+        
+            group.create_dataset('et', data=sel_e1*cos2phi + sel_e2*sin2phi)
+            group.create_dataset('er', data=-sel_e1*sin2phi + sel_e2*cos2phi)
+        
+            group.create_dataset('ct_bias', data=sel_c1*cos2phi + sel_c2*sin2phi)
+            group.create_dataset('cr_bias', data=-sel_c1*sin2phi + sel_c2*cos2phi)
+         
+            # calculates critical densities
+        
+            nsource = keep.sum()
+            ds = np.zeros(nsource)
+            dds = np.zeros(nsource)
+        
+            s_cr = np.zeros(nsource)
+        
+            dd = wl_cosmology.Dang(zd[i])
+        
+            for j in range(nsource):
+                ds[j] = wl_cosmology.Dang(group['z'][j])
+                dds[j] = wl_cosmology.Dang(zd[i], group['z'][j])
+        
+            s_cr = c**2/(4.*np.pi*G)*ds/dds/dd*Mpc/M_Sun
+        
+            group.create_dataset('s_cr', data=s_cr)
 
