@@ -129,8 +129,9 @@ def logpfunc(p):
         m200_here[m200_here > m200_grids[i][-1]] = m200_grids[i][-1]
 
         lc200_here = c200_mu + c200_sig * lc200_impsamp[i]
-        lc200_here[lc200_here < lc200_grids[i][0]] = lc200_grids[i][0]
         lc200_here[lc200_here > lc200_grids[i][-1]] = lc200_grids[i][-1]
+        lc200_oob = lc200_here < lc200_grids[i][0]
+        lc200_here[lc200_oob] = lc200_grids[i][0]
         
         # OBSERVED STELLAR MASS LIKELIHOOD TERM
         mstar_like = 1./(2.*np.pi)**0.5/merr_samp[i] * np.exp(-0.5*(mstar_here - mstar_samp[i])**2/merr_samp[i]**2)
@@ -144,6 +145,7 @@ def logpfunc(p):
         cut_renorm = 0.5*(erf((mstar_impsamp[i] - mstar_cut)/2.**0.5/merr_samp[i]) + 1.) # normalizes likelihood to 1, taking into account the cut in observed stellar mass
 
         integrand = mstar_like * np.exp(wl_loglike) / cut_renorm
+        integrand[lc200_oob] = 0. # PREVENTS CATASTROPHIC FAILURE DUE TO FINITE C200 GRID
 
         logp += np.log(integrand.sum())
 
