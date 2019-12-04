@@ -31,7 +31,7 @@ def M2d(R, Re):
 splinename = os.environ.get('BHWLDIR') + '/wl_profiles/deV_m2d_spline.dat'
 
 if not os.path.isfile(splinename):
-    print 'calculating grid of enclosed projected masses...'
+    print('calculating grid of enclosed projected masses...')
     rr = np.logspace(np.log10(deV_grid_rmin), np.log10(deV_grid_rmax), deV_grid_n)
 
     M2d_grid = 0.*rr
@@ -40,11 +40,11 @@ if not os.path.isfile(splinename):
         M2d_grid[j] = M2d(rr[j], 1.)
 
     M2d_spline = splrep(np.array([0.] + list(rr) + [1e10]), np.array([0.] + list(M2d_grid) + [1.]))
-    f = open(splinename, 'w')
+    f = open(splinename, 'wb')
     pickle.dump(M2d_spline, f)
     f.close()
 
-f = open(splinename, 'r')
+f = open(splinename, 'rb')
 deV_M2d_spline = pickle.load(f)
 f.close()
 

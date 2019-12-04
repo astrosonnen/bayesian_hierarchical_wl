@@ -52,7 +52,7 @@ def fast_Sigma(R, r2, alpha):
 
 def make_M2d_grid(Nr=100, Nalpha=9, Rmin=0.01, Rmax=100., alpha_min=0.1, alpha_max=0.5):
 
-    print 'calculating grid of enclosed projected masses...'
+    print('calculating grid of enclosed projected masses...')
     import ndinterp
     R_grid = np.logspace(np.log10(Rmin), np.log10(Rmax), Nr)
     R_spline = splrep(R_grid, np.arange(Nr))
@@ -64,17 +64,17 @@ def make_M2d_grid(Nr=100, Nalpha=9, Rmin=0.01, Rmax=100., alpha_min=0.1, alpha_m
     M2d_grid = np.empty((Nalpha, Nr))
     
     for i in range(Nalpha):
-        print 'alpha %3.2f'%alpha_grid[i]
+        print('alpha %3.2f'%alpha_grid[i])
         for j in range(Nr):
             M2d_grid[i,j] = M2d(R_grid[j], 1., alpha_grid[i])
     thing = ndinterp.ndInterp(axes, M2d_grid, order=3)
-    f = open(grid_dir+'/einasto_M2d_grid.dat','w')
+    f = open(grid_dir+'/einasto_M2d_grid.dat','wb')
     pickle.dump(thing, f)
     f.close()
 
 def make_Sigma_grid(Nr=100, Nalpha=9, Rmin=0.01, Rmax=100., alpha_min=0.1, alpha_max=0.5):
 
-    print 'calculating grid of surface mass density...'
+    print('calculating grid of surface mass density...')
     import ndinterp
     R_grid = np.logspace(np.log10(Rmin), np.log10(Rmax), Nr)
     R_spline = splrep(R_grid, np.arange(Nr))
@@ -86,11 +86,11 @@ def make_Sigma_grid(Nr=100, Nalpha=9, Rmin=0.01, Rmax=100., alpha_min=0.1, alpha
     Sigma_grid = np.empty((Nalpha, Nr))
     
     for i in range(Nalpha):
-        print 'alpha: %3.2f'%alpha_grid[i]
+        print('alpha: %3.2f'%alpha_grid[i])
         for j in range(Nr):
             Sigma_grid[i,j] = Sigma(R_grid[j], 1., alpha_grid[i])
     thing = ndinterp.ndInterp(axes, Sigma_grid, order=3)
-    f = open(grid_dir+'/einasto_Sigma_grid.dat','w')
+    f = open(grid_dir+'/einasto_Sigma_grid.dat','wb')
     pickle.dump(thing, f)
     f.close()
 
@@ -100,11 +100,11 @@ if not os.path.isfile(grid_dir+'/einasto_M2d_grid.dat'):
 if not os.path.isfile(grid_dir+'/einasto_Sigma_grid.dat'):
     make_Sigma_grid()
 
-f = open(grid_dir+'/einasto_M2d_grid.dat','r')
+f = open(grid_dir+'/einasto_M2d_grid.dat','rb')
 M2d_grid = pickle.load(f)
 f.close()
 
-f = open(grid_dir+'/einasto_Sigma_grid.dat','r')
+f = open(grid_dir+'/einasto_Sigma_grid.dat','rb')
 Sigma_grid = pickle.load(f)
 f.close()
 

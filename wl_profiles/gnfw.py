@@ -63,7 +63,7 @@ def make_M2d_Rbetam3_grid(Nr=100, Nb=28, Rmin=0.001, Rmax=100.):
     #this code calculates the quantity M2d(R, rs=1, beta)*R**(3-beta) on a grid of values of R between Rmin and Rmax, and values of the inner slope beta between 0.1 and 2.8.
     #the reason for the multiplication by R**(3-beta) is to make interpolation easier by having a function as flat as possible.
 
-    print 'calculating grid of enclosed projected masses...'
+    print('calculating grid of enclosed projected masses...')
     import ndinterp
     R_grid = np.logspace(np.log10(Rmin), np.log10(Rmax), Nr)
     R_spline = splrep(R_grid, np.arange(Nr))
@@ -75,11 +75,11 @@ def make_M2d_Rbetam3_grid(Nr=100, Nb=28, Rmin=0.001, Rmax=100.):
     M2d_grid = np.empty((Nb, Nr))
     
     for i in range(Nb):
-        print 'inner slope %4.2f'%beta_grid[i]
+        print('inner slope %4.2f'%beta_grid[i])
         for j in range(Nr):
             M2d_grid[i,j] = M2d(R_grid[j], 1., beta_grid[i])
     thing = ndinterp.ndInterp(axes, M2d_grid*R**(B-3.), order=3)
-    f = open(grid_dir+'/gNFW_M2d_Rbetam3_grid.dat','w')
+    f = open(grid_dir+'/gNFW_M2d_Rbetam3_grid.dat','wb')
     pickle.dump(thing, f)
     f.close()
 
@@ -88,7 +88,7 @@ def make_M3d_rbetam3_grid(Nr=100, Nb=28, rmin=0.01, rmax=100.):
     #this code calculates the quantity M3d(R, rs=1, beta)*R**(3-beta) on a grid of values of R between Rmin and Rmax, and values of the inner slope beta between 0.1 and 2.8.
     #the reason for the multiplication by R**(3-beta) is to make interpolation easier by having a function as flat as possible.
 
-    print 'calculating grid of enclosed projected masses...'
+    print('calculating grid of enclosed projected masses...')
     import ndinterp
     r_grid = np.logspace(np.log10(rmin), np.log10(rmax), Nr)
     r_spline = splrep(r_grid, np.arange(Nr))
@@ -100,11 +100,11 @@ def make_M3d_rbetam3_grid(Nr=100, Nb=28, rmin=0.01, rmax=100.):
     M3d_grid = np.empty((Nb, Nr))
 
     for i in range(Nb):
-        print 'inner slope %4.2f'%beta_grid[i]
+        print('inner slope %4.2f'%beta_grid[i])
         for j in range(Nr):
             M3d_grid[i,j] = M3d(r_grid[j], 1., beta_grid[i])
     thing = ndinterp.ndInterp(axes, M3d_grid*R**(B-3.), order=3)
-    f = open(grid_dir+'/gNFW_M3d_rbetam3_grid.dat','w')
+    f = open(grid_dir+'/gNFW_M3d_rbetam3_grid.dat','wb')
     pickle.dump(thing, f)
     f.close()
 
@@ -112,7 +112,7 @@ def make_Sigma_R_grid(Nr=100, Nb=28, Rmin=0.01, Rmax=100.):
     #this code calculates the quantity M2d(R, rs=1, beta)*R**(3-beta) on a grid of values of R between Rmin and Rmax, and values of the inner slope beta between 0.1 and 2.8.
     #the reason for the multiplication by R**(3-beta) is to make interpolation easier by having a function as flat as possible.
 
-    print 'calculating grid of projected masses...'
+    print('calculating grid of projected masses...')
     import ndinterp
     R_grid = np.logspace(np.log10(Rmin), np.log10(Rmax), Nr)
     R_spline = splrep(R_grid, np.arange(Nr))
@@ -124,11 +124,11 @@ def make_Sigma_R_grid(Nr=100, Nb=28, Rmin=0.01, Rmax=100.):
     Sigma_grid = np.empty((Nb, Nr))
     
     for i in range(Nb):
-        print 'inner slope %4.2f'%beta_grid[i]
+        print('inner slope %4.2f'%beta_grid[i])
         for j in range(Nr):
             Sigma_grid[i,j] = Sigma(R_grid[j], 1., beta_grid[i])
     thing = ndinterp.ndInterp(axes, Sigma_grid*R, order=3)
-    f = open(grid_dir+'/gNFW_Sigma_R_grid.dat','w')
+    f = open(grid_dir+'/gNFW_Sigma_R_grid.dat','wb')
     pickle.dump(thing, f)
     f.close()
 
@@ -141,15 +141,15 @@ if not os.path.isfile(grid_dir+'/gNFW_M3d_rbetam3_grid.dat'):
 if not os.path.isfile(grid_dir+'/gNFW_Sigma_R_grid.dat'):
     make_Sigma_R_grid()
 
-f = open(grid_dir+'/gNFW_M2d_Rbetam3_grid.dat','r')
+f = open(grid_dir+'/gNFW_M2d_Rbetam3_grid.dat','rb')
 M2d_grid = pickle.load(f)
 f.close()
 
-f = open(grid_dir+'/gNFW_M3d_rbetam3_grid.dat','r')
+f = open(grid_dir+'/gNFW_M3d_rbetam3_grid.dat','rb')
 M3d_grid = pickle.load(f)
 f.close()
 
-f = open(grid_dir+'/gNFW_Sigma_R_grid.dat','r')
+f = open(grid_dir+'/gNFW_Sigma_R_grid.dat','rb')
 Sigma_grid = pickle.load(f)
 f.close()
 
