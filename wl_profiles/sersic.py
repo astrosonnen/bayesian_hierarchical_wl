@@ -34,7 +34,7 @@ def M2d(R, nser, Re):
 interpname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m2d_interp.dat'
 
 if not os.path.isfile(interpname):
-    print 'calculating grid of enclosed projected masses...'
+    print('calculating grid of enclosed projected masses...')
     rr = np.logspace(np.log10(rgrid_min), np.log10(rgrid_max), rgrid_n)
     nn = np.logspace(np.log10(ngrid_min), np.log10(ngrid_max), ngrid_n)
 
@@ -47,15 +47,11 @@ if not os.path.isfile(interpname):
     axes = {0: splrep(rr, np.arange(rgrid_n)), 1: splrep(nn, np.arange(ngrid_n))}
 
     M2d_interp = ndinterp.ndInterp(axes, M2d_grid, order=3)
-    f = open(interpname, 'w')
+    f = open(interpname, 'wb')
     pickle.dump(M2d_interp, f)
     f.close()
 
-    f = open('tmp_grid.dat', 'w')
-    pickle.dump(M2d_grid, f)
-    f.close()
-
-f = open(interpname, 'r')
+f = open(interpname, 'rb')
 M2d_interp = pickle.load(f)
 f.close()
 
@@ -75,7 +71,7 @@ def fast_M2d(x, nser):
         xarr = x*np.ones(nlen)
         point = np.array((xarr, narr)).reshape((2, nlen)).T
     else:
-        print 'unable to match shapes of x and nser'
+        print('unable to match shapes of x and nser')
         df
 
     oob = xarr > rgrid_max
