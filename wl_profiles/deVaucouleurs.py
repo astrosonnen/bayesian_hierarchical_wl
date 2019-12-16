@@ -9,7 +9,7 @@ import pickle
 ndeV = 4.
 
 deV_grid_rmin = 0.001
-deV_grid_rmax = 100.
+deV_grid_rmax = 1000.
 deV_grid_n = 1000
 
 def b(n):
