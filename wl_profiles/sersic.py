@@ -8,7 +8,7 @@ import pickle
 
 
 rgrid_min = 0.001
-rgrid_max = 100.
+rgrid_max = 1000.
 rgrid_n = 1000
 
 ngrid_min = 0.5
