@@ -34,7 +34,7 @@ mstar_grids = []
 m200_grids = []
 lc200_grids = []
 
-# reads individual lens mcmc chains
+# reads individual lens likelihood grids
 for i in range(ngal):
     name = 'lens_%04d'%i
     print i
@@ -98,7 +98,7 @@ bounds = []
 for par in pars:
     bounds.append((par['lower'], par['upper']))
 
-nlens = len(chains)
+nlens = len(grids)
 
 def logprior(p):
     for i in range(npars):
