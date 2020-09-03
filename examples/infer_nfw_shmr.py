@@ -18,6 +18,8 @@ f.close()
 
 ngal = len(zd)
 
+nint = 1000
+
 mstar_cut = 11.
 mstar_piv = 11.3
 
