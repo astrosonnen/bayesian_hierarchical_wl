@@ -3,7 +3,7 @@ from scipy.integrate import quad
 import os
 from scipy.special import gamma as gfunc
 from scipy.interpolate import splrep, splev
-import pickle
+import h5py
 
 
 ndeV = 4.
@@ -28,9 +28,9 @@ def M2d(R, Re):
         out[i] = 2*np.pi*quad(lambda r: r*Sigma(r, Re), 0., R[i])[0]
     return out
 
-splinename = os.environ.get('BHWLDIR') + '/wl_profiles/deV_m2d_spline.dat'
+gridname = os.environ.get('BHWLDIR') + '/wl_profiles/deV_m2d_grid.hdf5'
 
-if not os.path.isfile(splinename):
+if not os.path.isfile(gridname):
     print('calculating grid of enclosed projected masses...')
     rr = np.logspace(np.log10(deV_grid_rmin), np.log10(deV_grid_rmax), deV_grid_n)
 
@@ -39,14 +39,17 @@ if not os.path.isfile(splinename):
     for j in range(deV_grid_n):
         M2d_grid[j] = M2d(rr[j], 1.)
 
-    M2d_spline = splrep(np.array([0.] + list(rr) + [1e10]), np.array([0.] + list(M2d_grid) + [1.]))
-    f = open(splinename, 'wb')
-    pickle.dump(M2d_spline, f)
-    f.close()
+    grid_file = h5py.File(gridname, 'w')
+    grid_file.create_dataset('M2d_grid', data=M2d_grid)
+    grid_file.create_dataset('R_grid', data=rr)
+    grid_file.close()
 
-f = open(splinename, 'rb')
-deV_M2d_spline = pickle.load(f)
-f.close()
+else:
+    grid_file = h5py.File(gridname, 'r')
+    M2d_grid = grid_file['M2d_grid'][()]
+    rr = grid_file['R_grid'][()]
+
+deV_M2d_spline = splrep(np.array([0.] + list(rr) + [1e10]), np.array([0.] + list(M2d_grid) + [1.]))
 
 def fast_M2d(x):
     return splev(x, deV_M2d_spline)

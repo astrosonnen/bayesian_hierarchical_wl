@@ -4,16 +4,8 @@ import os
 from scipy.special import gamma as gfunc
 from scipy.interpolate import splrep
 import ndinterp
-import pickle
+import h5py
 
-
-rgrid_min = 0.001
-rgrid_max = 1000.
-rgrid_n = 1000
-
-ngrid_min = 0.5
-ngrid_max = 20.
-ngrid_n = 21
 
 def b(nser):
     return 2*nser - 1./3. + 4/405./nser + 46/25515/nser**2
@@ -31,29 +23,39 @@ def M2d(R, nser, Re):
         out[i] = 2*np.pi*quad(lambda r: r*Sigma(r, nser, Re), 0., R[i])[0]
     return out
 
-interpname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m2d_interp.dat'
+# grids for fast computation
+rgrid_min = 0.001
+rgrid_max = 1000.
+rgrid_n = 1000
 
-if not os.path.isfile(interpname):
+ngrid_min = 0.5
+ngrid_max = 20.
+ngrid_n = 21
+
+rr = np.logspace(np.log10(rgrid_min), np.log10(rgrid_max), rgrid_n)
+nn = np.logspace(np.log10(ngrid_min), np.log10(ngrid_max), ngrid_n)
+
+axes = {0: splrep(rr, np.arange(rgrid_n)), 1: splrep(nn, np.arange(ngrid_n))}
+
+gridname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m2d_grid.hdf5'
+
+if not os.path.isfile(gridname):
     print('calculating grid of enclosed projected masses...')
-    rr = np.logspace(np.log10(rgrid_min), np.log10(rgrid_max), rgrid_n)
-    nn = np.logspace(np.log10(ngrid_min), np.log10(ngrid_max), ngrid_n)
-
     M2d_grid = np.zeros((rgrid_n, ngrid_n))
 
     for i in range(rgrid_n):
         for j in range(ngrid_n):
             M2d_grid[i, j] = M2d(rr[i], nn[j], 1.)
 
-    axes = {0: splrep(rr, np.arange(rgrid_n)), 1: splrep(nn, np.arange(ngrid_n))}
+    grid_file = h5py.File(gridname, 'w')
+    grid_file.create_dataset('grid', data=M2d_grid)
+    grid_file.close()
+else:
+    grid_file = h5py.File(gridname, 'r')
+    M2d_grid = grid_file['grid'][()].copy()
+    grid_file.close()
 
-    M2d_interp = ndinterp.ndInterp(axes, M2d_grid, order=3)
-    f = open(interpname, 'wb')
-    pickle.dump(M2d_interp, f)
-    f.close()
-
-f = open(interpname, 'rb')
-M2d_interp = pickle.load(f)
-f.close()
+M2d_interp = ndinterp.ndInterp(axes, M2d_grid, order=3)
 
 def fast_M2d(x, nser):
 
