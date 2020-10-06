@@ -7,33 +7,33 @@ import numpy as np
 M3d1 = np.log(2.) - 0.5
 
 def gfunc(x):
-    x = np.atleast_1d(x)
-    g = x*.0
-    arr = x[x<1]
-    g[x<1] = np.log(arr/2) + 1/np.sqrt(1 - arr**2)*np.arccosh(1/arr)
-    arr = x[x==1]
-    g[x==1] = 1 + np.log(0.5)
-    arr = x[x>1]
-    g[x>1] = np.log(arr/2) + 1/np.sqrt(arr**2-1)*np.arccos(1/arr)
+    xx = np.atleast_1d(x)
+    g = xx*.0
+    arr = xx[xx<1]
+    g[xx<1] = np.log(arr/2) + 1/np.sqrt(1 - arr**2)*np.arccosh(1/arr)
+    arr = xx[xx==1]
+    g[xx==1] = 1 + np.log(0.5)
+    arr = xx[xx>1]
+    g[xx>1] = np.log(arr/2) + 1/np.sqrt(arr**2-1)*np.arccos(1/arr)
     return g
 
 def Ffunc(x):
-    x = np.atleast_1d(x)
-    c1 = x<1
-    c2 = x==1
-    c3 = x>1
-    x[c1] = 1/(x[c1]**2-1)*(1 - 1/np.sqrt(1-x[c1]**2)*np.arccosh(1/x[c1]))
-    x[c2] = 1/3.
-    x[c3] = 1/(x[c3]**2-1)*(1 - 1/np.sqrt(x[c3]**2-1)*np.arccos(1/x[c3]))
-    return x
+    xx = np.atleast_1d(x)
+    c1 = xx<1
+    c2 = xx==1
+    c3 = xx>1
+    xx[c1] = 1/(xx[c1]**2-1)*(1 - 1/np.sqrt(1-xx[c1]**2)*np.arccosh(1/xx[c1]))
+    xx[c2] = 1/3.
+    xx[c3] = 1/(xx[c3]**2-1)*(1 - 1/np.sqrt(xx[c3]**2-1)*np.arccos(1/xx[c3]))
+    return xx
 
 def hfunc(x):
-    x = np.atleast_1d(x)
-    h = x*.0
-    arr = x[x<1]
-    h[x<1] = np.log(arr/2)**2 - np.arccosh(1/arr)**2
-    arr = x[x>=1]
-    h[x>=1] = np.log(arr/2)**2 - np.arccos(1/arr)**2
+    xx = np.atleast_1d(x)
+    h = xx*.0
+    arr = xx[xx<1]
+    h[xx<1] = np.log(arr/2)**2 - np.arccosh(1/arr)**2
+    arr = xx[xx>=1]
+    h[xx>=1] = np.log(arr/2)**2 - np.arccos(1/arr)**2
     return h
 
 
