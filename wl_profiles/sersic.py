@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import quad
 import os
 from scipy.special import gamma as gfunc
-from scipy.interpolate import splrep
+from scipy.interpolate import splrep, splint
 import ndinterp
 import h5py
 
@@ -81,4 +81,65 @@ def fast_M2d(x, nser):
     oarr[oob] = 1.
 
     return oarr
+
+def rho(r, nser, reff): # spherical deprojection
+
+    deriv = lambda R: -b(nser)/nser*(R/(reff))**(1/nser)/R*Sigma(R, nser, reff)
+    return -1./np.pi*quad(lambda R: deriv(R)/(R**2 - r**2)**0.5, r, np.inf)[0]
+
+m3dgridname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m3d_grid.hdf5'
+
+if not os.path.isfile(m3dgridname):
+    print('calculating grid of enclosed 3d masses...')
+    M3d_grid = np.zeros((rgrid_n, ngrid_n))
+    rr_ext = np.append(0., rr)
+
+    for j in range(ngrid_n):
+        rho_grid = np.zeros(rgrid_n+1)
+        for i in range(rgrid_n):
+            rho_grid[i+1] = rho(rr[i], nn[j], 1.)
+            mprime_spline = splrep(rr_ext, 4.*np.pi*rho_grid*rr_ext**2)
+        for i in range(rgrid_n):
+            M3d_grid[i, j] = splint(0., rr[i], mprime_spline)
+
+    m3d_grid_file = h5py.File(m3dgridname, 'w')
+    m3d_grid_file.create_dataset('m3d_grid', data=M3d_grid)
+    m3d_grid_file.create_dataset('r_grid', data=rr)
+    m3d_grid_file.create_dataset('nser_grid', data=nn)
+    m3d_grid_file.close()
+else:
+    m3d_grid_file = h5py.File(m3dgridname, 'r')
+    M3d_grid = m3d_grid_file['m3d_grid'][()].copy()
+    m3d_grid_file.close()
+
+M3d_interp = ndinterp.ndInterp(axes, M3d_grid, order=3)
+
+def fast_M3d(x, nser): # 3d mass enclosed within radius x=r/reff, normalized to unit total mass.
+
+    xarr = np.atleast_1d(x)
+    narr = np.atleast_1d(nser)
+
+    xlen = len(xarr)
+    nlen = len(narr)
+
+    if xlen == nlen:
+        point = np.array((xarr, narr)).reshape((2, xlen)).T
+    elif nlen == 1:
+        point = np.array((xarr, nser*np.ones(xlen))).reshape((2, xlen)).T
+    elif xlen == 1:
+        xarr = x*np.ones(nlen)
+        point = np.array((xarr, narr)).reshape((2, nlen)).T
+    else:
+        print('unable to match shapes of x and nser')
+        df
+
+    oarr = M3d_interp.eval(point)
+
+    oob_up = xarr > rgrid_max
+    oob_dw = xarr < rgrid_min
+    oarr[oob_up] = 1.
+    oarr[oob_dw] = 0.
+
+    return oarr
+
 
