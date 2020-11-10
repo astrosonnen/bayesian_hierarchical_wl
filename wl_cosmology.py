@@ -16,6 +16,7 @@ default_cosmo = {'omegaM': omegaM, 'omegaL': omegaL, 'omegar': omegar, 'h': h}
 Mpc = 3.08568025e24
 c = 2.99792458e10
 G = 6.67300e-8
+f_bar = 4.825 / 30.7 # baryon fraction
 
 M_Sun = 1.98892e33
 
@@ -50,6 +51,7 @@ def Dang(z1, z2=0., cosmo=default_cosmo):
     return D
 
 def rhoc(z, cosmo=default_cosmo):
+    """ critical density of the Universe in M_Sun / Mpc**3"""
     for par in default_cosmo:
         if not par in cosmo:
             cosmo[par] = default_cosmo[par]
