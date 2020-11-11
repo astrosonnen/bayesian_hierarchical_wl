@@ -53,7 +53,7 @@ for i in range(istart, iend):
 
     print(i)
     lensname = 'lens_%05d'%i
-    gridname = griddir+'%s_wl_likelihood_grid.hdf5'%lensname
+    gridname = griddir+'%s_wl_likegrid.hdf5'%lensname
 
     lens_model.reff = 10.**mock['lreff_samp'][i]
 
