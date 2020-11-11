@@ -849,7 +849,7 @@ class GNFWdeV:
         self.Mpc2deg = np.rad2deg(1./self.angD)
         self.rs_ang = self.rs*self.Mpc2deg
         self.reff_ang = self.reff*self.Mpc2deg/1000.
-        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gamma)
+        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gammadm)
         self.S_bulge = self.mstar/self.reff**2*1e6
         self.sources = sources
 
