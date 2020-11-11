@@ -1,7 +1,7 @@
 import numpy as np
 import wl_cosmology
 from wl_cosmology import c, G, Mpc, M_Sun
-from wl_profiles import nfw, deVaucouleurs, gnfw, einasto, sersic
+from wl_profiles import nfw, deVaucouleurs, gnfw, sersic #, einasto
 from scipy.optimize import brentq
 from math import pi
 
