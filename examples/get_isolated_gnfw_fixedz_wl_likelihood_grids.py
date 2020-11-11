@@ -7,10 +7,13 @@ import wl_lens_models
 
 mockname = 'isolated_gnfw_fixedz_mock'
 
+batchno = int(sys.argv[1])
+batchsize = 100
 # reads in mock lens catalog
 mock = h5py.File('../wl_sims/%s.hdf5'%mockname, 'r')
 
-griddir = '%s_grids/'%mockname # directory where grids will be stored
+griddir = '/net/ringvaart/data2/sonnenfeld/4hs_forecasts/%s_grids/'%mockname # directory where grids will be stored
+
 if not os.path.isdir(griddir):
     os.system('mkdir %s'%griddir)
 
@@ -22,6 +25,9 @@ gammadm_max = mock.attrs['gammadm_max']
 sigma_eps = mock.attrs['sigma_eps']
 
 nlens = mock.attrs['nlens']
+
+istart = batchno * batchsize
+iend = min(nlens, (batchno+1)*batchsize)
 
 # defines grid axes
 m200_min = 11.
@@ -43,7 +49,7 @@ gammadm_grid = np.linspace(gammadm_min, gammadm_max, ngammadm)
 lens_model = wl_lens_models.GNFWdeV(z=zd, c200=c200)
 s_cr = lens_model.S_cr(zs) # critical surface mass density for lensing (M_Sun/Mpc^2)
 
-for i in range(10):
+for i in range(istart, iend):
 
     print(i)
     lensname = 'lens_%05d'%i
