@@ -12,11 +12,11 @@ mockname = 'isolated_gnfw_fixedz_wdyn'
 
 mock = h5py.File('../wl_sims/%s_mock.hdf5'%mockname, 'r')
 
-griddir = '/net/ringvaart/data2/sonnenfeld/4hs_forecasts/%s_mock_grids/'%mockname
+griddir = '/net/ringvaart/data2/sonnenfeld/4hs_forecasts/isolated_gnfw_fixedz_mock_grids/'
 dyndir = '/net/ringvaart/data2/sonnenfeld/4hs_forecasts/'
 outdir = '/net/ringvaart/data2/sonnenfeld/4hs_forecasts/'
 
-nstep = 100
+nstep = 1000
 nwalkers = 50
 nis = 1000
 
@@ -73,8 +73,8 @@ for i in range(nlens):
 
         grid_file = h5py.File(gridname, 'r')
 
-        lmstar_grid = grid_file['mstar_grid'][()]
-        lm200_grid = grid_file['m200_grid'][()]
+        lmstar_grid = grid_file['lmstar_grid'][()]
+        lm200_grid = grid_file['lm200_grid'][()]
         gammadm_grid = grid_file['gammadm_grid'][()]
 
         lmstar_grids.append(lmstar_grid)
@@ -161,7 +161,7 @@ def logpfunc(p):
         # dynamics
         s2_stars = 10.**lmstar_here * s2_deV_samp[i]
 
-        dynpoint = np.array((lm200_here, gammadm_here, lreff_samp[i]))
+        dynpoint = np.array((lm200_here, gammadm_here, np.ones(nis)*lreff_samp[i])).T
         s2_halo = s2_gnfw_dyninterp.eval(dynpoint)
 
         vdisp_here = (s2_stars + s2_halo)**0.5
