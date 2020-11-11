@@ -30,17 +30,17 @@ istart = batchno * batchsize
 iend = min(nlens, (batchno+1)*batchsize)
 
 # defines grid axes
-m200_min = 11.
-m200_max = 15.
+lm200_min = 11.
+lm200_max = 15.
 nm200 = 41
 
-m200_grid = np.linspace(m200_min, m200_max, nm200)
+lm200_grid = np.linspace(lm200_min, lm200_max, nm200)
 
-mstar_min = 10.5
-mstar_max = 13.
+lmstar_min = 10.5
+lmstar_max = 13.
 nmstar = 26
 
-mstar_grid = np.linspace(mstar_min, mstar_max, nmstar)
+lmstar_grid = np.linspace(lmstar_min, lmstar_max, nmstar)
 
 ngammadm = 21
 
@@ -64,9 +64,9 @@ for i in range(istart, iend):
     like_grid = np.zeros((nmstar, nm200, ngammadm))
     
     for j in range(nmstar):
-        lens_model.mstar = 10.**mstar_grid[j]
+        lens_model.mstar = 10.**lmstar_grid[j]
         for k in range(nm200):
-            lens_model.m200 = 10.**m200_grid[k]
+            lens_model.m200 = 10.**lm200_grid[k]
             for l in range(ngammadm):
                 lens_model.gammadm = gammadm_grid[l]
                 lens_model.update()
@@ -80,8 +80,8 @@ for i in range(istart, iend):
 
     grid_file = h5py.File(gridname, 'w')
     
-    grid_file.create_dataset('mstar_grid', data=mstar_grid)
-    grid_file.create_dataset('m200_grid', data=m200_grid)
+    grid_file.create_dataset('lmstar_grid', data=lmstar_grid)
+    grid_file.create_dataset('lm200_grid', data=lm200_grid)
     grid_file.create_dataset('gammadm_grid', data=gammadm_grid)
     grid_file.create_dataset('wl_like_grid', data=like_grid)
 
