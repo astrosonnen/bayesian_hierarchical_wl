@@ -830,3 +830,152 @@ class AdcontrSersicCheat:
         return self.sources['gammat'] * (np.cos(2.*self.sources['phi']) + 1j*np.sin(2.*self.sources['phi']))
 
 
+class GNFWdeV:
+
+    def __init__(self, z=0.3, m200=1e13, c200=5., gamma=1., mstar=1e11, reff=5., ra=0., dec=0., sources=None, \
+                 cosmo=wl_cosmology.default_cosmo):
+
+        self.z = z
+        self.cosmo = cosmo
+        self.m200 = m200 # halo mass in M_Sun units
+        self.mstar = mstar # central point mass in M_Sun units
+        self.rhocrit = wl_cosmology.rhoc(self.z, cosmo=self.cosmo)
+        self.r200 = (self.m200*3./200./(4.*pi)/self.rhocrit)**(1/3.) #r200 in Mpc
+        self.c200 = c200
+        self.rs = self.r200/self.c200
+        self.reff = reff # effective radius in kpc
+        self.gamma = gamma
+        self.angD = wl_cosmology.Dang(self.z, cosmo=self.cosmo)
+        self.Mpc2deg = np.rad2deg(1./self.angD)
+        self.rs_ang = self.rs*self.Mpc2deg
+        self.reff_ang = self.reff*self.Mpc2deg/1000.
+        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gamma)
+        self.S_bulge = self.mstar/self.reff**2*1e6
+        self.sources = sources
+
+        if ra is not None:
+            self.ra = ra
+        if dec is not None:
+            self.dec = dec
+
+    def update(self):
+        self.r200 = (self.m200*3./200./(4.*pi)/self.rhocrit)**(1/3.)
+        self.rs = self.r200/self.c200
+        self.rs_ang = self.rs*self.Mpc2deg
+        self.reff_ang = self.reff*self.Mpc2deg/1000.
+        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gamma)
+        self.S_bulge = self.mstar/self.reff**2*1e6
+
+    def S_cr(self, z): # critical surface mass density in M_Sun/Mpc^2
+        Ds = wl_cosmology.Dang(z, cosmo=self.cosmo)
+        Dds = wl_cosmology.Dang(z, self.z, cosmo=self.cosmo)
+        return c**2/(4.*pi*G)*Ds/Dds/self.angD*Mpc/M_Sun
+
+    def get_source_scr(self):
+        nsource = len(self.sources['z'])
+        s_crs = np.zeros(nsource)
+        for i in range(nsource):
+            if self.sources['z'][i] > self.z:
+                s_crs[i] = self.S_cr(self.sources['z'][i])
+        self.sources['s_cr'] = s_crs
+
+    def get_source_polarcoords(self):
+
+        self.sources['r'] = ((self.ra - self.sources['ra'])**2*np.cos(np.deg2rad(self.dec))**2 + (self.dec - self.sources['dec'])**2)**0.5
+
+        xh =  - (self.sources['ra'] - self.ra)*np.cos(np.deg2rad(self.dec))
+        yh = self.sources['dec'] - self.dec
+
+        phih = np.arctan(yh/xh)
+
+        phih[xh<0.] = phih[xh<0.] + np.pi
+        phih[phih<0.] += 2.*np.pi
+
+        self.sources['phi'] = phih
+
+    def get_source_et(self):
+
+        cosphi = np.cos(self.sources['phi'])
+        sinphi = np.sin(self.sources['phi'])
+
+        sin2phi = 2.*cosphi*sinphi
+        cos2phi = cosphi**2 - sinphi**2
+
+        self.sources['et'] = self.sources['e1']*cos2phi + self.sources['e2']*sin2phi
+
+    def get_source_gammat(self):
+        self.sources['gammat'] = (self.halo_norm*(gnfw.fast_M2d(self.sources['r'], self.rs_ang, self.gamma)/pi/(self.sources['r']/self.Mpc2deg)**2 - gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gamma)) + \
+                self.S_bulge*(deVaucouleurs.fast_M2d(self.sources['r']/self.reff_ang)/(self.sources['r']/self.reff_ang)**2/pi - \
+                deVaucouleurs.Sigma(self.sources['r']/self.reff_ang, 1.))) / self.sources['s_cr']
+
+    def get_source_kappa(self):
+        self.sources['kappa'] = (self.halo_norm*gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gamma) + \
+                self.S_bulge*deVaucouleurs.Sigma(self.sources['r']/self.reff_ang, 1.) )/ self.sources['s_cr']
+
+    def gammat(self, theta, s_cr):
+        return (self.halo_norm*(gnfw.fast_M2d(theta, self.rs_ang, self.gamma)/pi/(theta/self.Mpc2deg)**2 - gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma)) + \
+                self.S_bulge*(deVaucouleurs.fast_M2d(theta/self.reff_ang)/(theta/self.reff_ang)**2/pi - \
+                              deVaucouleurs.Sigma(theta/self.reff_ang, 1.))) / s_cr
+
+    def gamma1(self, r, phi, s_cr):
+        return np.cos(2.*phi)*self.gammat(r, s_cr)
+
+    def gamma2(self, r, phi, s_cr):
+        return np.sin(2.*phi)*self.gammat(r, s_cr)
+
+    def kappa(self, theta, s_cr):
+        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma) + \
+                self.S_bulge*deVaucouleurs.Sigma(theta/self.reff_ang, 1.)) /s_cr
+
+    def alpha(self, theta, s_cr):
+        return (self.halo_norm/theta*gnfw.fast_M2d(theta/self.rs_ang) + \
+               self.S_bulge/pi*theta/(theta/self.reff_ang)**2*deVaucouleurs.fast_M2d(theta/self.reff_ang)) \
+               / s_cr
+
+    def mu(self, theta, s_cr):
+        return ((1 - self.kappa(theta, s_cr))**2 - self.gammat(theta, s_cr)**2)**(-1)
+
+    def rein(self, s_cr, xtol=1e-6, xmin=1e-6, xmax=1.):
+        bfunc = lambda theta: theta - self.alpha(theta, s_cr)
+        if bfunc(xmin)*bfunc(xmax) > 0:
+            return 0.
+        else:
+            return brentq(bfunc, xmin, xmax, xtol=xtol)
+
+    def gcompl(self, r, phi, s_cr):
+        return (1. - self.kappa(r, s_cr))**(-1)*(self.gamma1(r, phi, s_cr) + 1j*self.gamma2(r, phi, s_cr))
+
+    def gcomplstar(self, r, phi, s_cr):
+        return (1. - self.kappa(r, s_cr))**(-1)*(self.gamma1(r, phi, s_cr) - 1j*self.gamma2(r, phi, s_cr))
+
+    def source_gcompl(self):
+        self.get_source_gammat()
+        self.get_source_kappa()
+        return (1. - self.sources['kappa'])**(-1) * self.sources['gammat'] * \
+               (np.cos(2.*self.sources['phi']) + 1j*np.sin(2.*self.sources['phi']))
+
+    def source_gamma(self):
+        self.get_source_gammat()
+        return self.sources['gammat'] * (np.cos(2.*self.sources['phi']) + 1j*np.sin(2.*self.sources['phi']))
+
+    def get_image(self, beta, s_cr, rmin=None, rmax=10.):
+
+        if rmin is None:
+            rmin = self.rein(z)
+
+        xfunc = lambda theta: theta - self.alpha(theta, s_cr) - beta
+
+        return brentq(xfunc, rmin, rmax)
+
+    def Sigma(self, theta): # surface mass density in M_Sun/pc^2
+        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma) +\
+                self.S_bulge*deVaucouleurs.Sigma(theta/self.reff_ang, 1.))/1e12
+
+    def Sigmabar(self, theta):
+        return (self.halo_norm*gnfw.fast_M2d(theta, self.rs_ang, self.gamma)/(theta/self.Mpc2deg)**2/pi + \
+                self.S_bulge*(deVaucouleurs.fast_M2d(theta/self.reff_ang)/(theta/self.reff_ang)**2/pi)) /1e12
+
+    def DeltaSigma(self, theta):
+        return (self.Sigmabar(theta) - self.Sigma(theta))
+
+
