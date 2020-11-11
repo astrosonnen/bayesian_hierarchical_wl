@@ -832,7 +832,7 @@ class AdcontrSersicCheat:
 
 class GNFWdeV:
 
-    def __init__(self, z=0.3, m200=1e13, c200=5., gamma=1., mstar=1e11, reff=5., ra=0., dec=0., sources=None, \
+    def __init__(self, z=0.3, m200=1e13, c200=5., gammadm=1., mstar=1e11, reff=5., ra=0., dec=0., sources=None, \
                  cosmo=wl_cosmology.default_cosmo):
 
         self.z = z
@@ -844,7 +844,7 @@ class GNFWdeV:
         self.c200 = c200
         self.rs = self.r200/self.c200
         self.reff = reff # effective radius in kpc
-        self.gamma = gamma
+        self.gammadm = gammadm
         self.angD = wl_cosmology.Dang(self.z, cosmo=self.cosmo)
         self.Mpc2deg = np.rad2deg(1./self.angD)
         self.rs_ang = self.rs*self.Mpc2deg
@@ -863,7 +863,7 @@ class GNFWdeV:
         self.rs = self.r200/self.c200
         self.rs_ang = self.rs*self.Mpc2deg
         self.reff_ang = self.reff*self.Mpc2deg/1000.
-        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gamma)
+        self.halo_norm = self.m200/gnfw.fast_M3d(self.r200, self.rs, self.gammadm)
         self.S_bulge = self.mstar/self.reff**2*1e6
 
     def S_cr(self, z): # critical surface mass density in M_Sun/Mpc^2
@@ -904,16 +904,16 @@ class GNFWdeV:
         self.sources['et'] = self.sources['e1']*cos2phi + self.sources['e2']*sin2phi
 
     def get_source_gammat(self):
-        self.sources['gammat'] = (self.halo_norm*(gnfw.fast_M2d(self.sources['r'], self.rs_ang, self.gamma)/pi/(self.sources['r']/self.Mpc2deg)**2 - gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gamma)) + \
+        self.sources['gammat'] = (self.halo_norm*(gnfw.fast_M2d(self.sources['r'], self.rs_ang, self.gammadm)/pi/(self.sources['r']/self.Mpc2deg)**2 - gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gammadm)) + \
                 self.S_bulge*(deVaucouleurs.fast_M2d(self.sources['r']/self.reff_ang)/(self.sources['r']/self.reff_ang)**2/pi - \
                 deVaucouleurs.Sigma(self.sources['r']/self.reff_ang, 1.))) / self.sources['s_cr']
 
     def get_source_kappa(self):
-        self.sources['kappa'] = (self.halo_norm*gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gamma) + \
+        self.sources['kappa'] = (self.halo_norm*gnfw.fast_Sigma(self.sources['r']/self.Mpc2deg, self.rs, self.gammadm) + \
                 self.S_bulge*deVaucouleurs.Sigma(self.sources['r']/self.reff_ang, 1.) )/ self.sources['s_cr']
 
     def gammat(self, theta, s_cr):
-        return (self.halo_norm*(gnfw.fast_M2d(theta, self.rs_ang, self.gamma)/pi/(theta/self.Mpc2deg)**2 - gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma)) + \
+        return (self.halo_norm*(gnfw.fast_M2d(theta, self.rs_ang, self.gammadm)/pi/(theta/self.Mpc2deg)**2 - gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gammadm)) + \
                 self.S_bulge*(deVaucouleurs.fast_M2d(theta/self.reff_ang)/(theta/self.reff_ang)**2/pi - \
                               deVaucouleurs.Sigma(theta/self.reff_ang, 1.))) / s_cr
 
@@ -924,7 +924,7 @@ class GNFWdeV:
         return np.sin(2.*phi)*self.gammat(r, s_cr)
 
     def kappa(self, theta, s_cr):
-        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma) + \
+        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gammadm) + \
                 self.S_bulge*deVaucouleurs.Sigma(theta/self.reff_ang, 1.)) /s_cr
 
     def alpha(self, theta, s_cr):
@@ -968,11 +968,11 @@ class GNFWdeV:
         return brentq(xfunc, rmin, rmax)
 
     def Sigma(self, theta): # surface mass density in M_Sun/pc^2
-        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gamma) +\
+        return (self.halo_norm*gnfw.fast_Sigma(theta/self.Mpc2deg, self.rs, self.gammadm) +\
                 self.S_bulge*deVaucouleurs.Sigma(theta/self.reff_ang, 1.))/1e12
 
     def Sigmabar(self, theta):
-        return (self.halo_norm*gnfw.fast_M2d(theta, self.rs_ang, self.gamma)/(theta/self.Mpc2deg)**2/pi + \
+        return (self.halo_norm*gnfw.fast_M2d(theta, self.rs_ang, self.gammadm)/(theta/self.Mpc2deg)**2/pi + \
                 self.S_bulge*(deVaucouleurs.fast_M2d(theta/self.reff_ang)/(theta/self.reff_ang)**2/pi)) /1e12
 
     def DeltaSigma(self, theta):
