@@ -8,7 +8,7 @@ import wl_lens_models
 mockname = 'isolated_gnfw_fixedz_mock'
 
 batchno = int(sys.argv[1])
-batchsize = 100
+batchsize = 1000
 # reads in mock lens catalog
 mock = h5py.File('../wl_sims/%s.hdf5'%mockname, 'r')
 
