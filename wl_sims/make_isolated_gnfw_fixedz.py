@@ -3,8 +3,6 @@ from wl_profiles import gnfw, sersic
 import wl_lens_models
 from wl_cosmology import Mpc, c, G, M_Sun
 import wl_cosmology
-import sigma_model
-from tracer_profiles import deVaucouleurs
 from scipy.optimize import brentq, minimize_scalar
 from scipy.stats import truncnorm
 from scipy.interpolate import splrep, splev
@@ -16,7 +14,7 @@ import h5py
 # All lenses at the same redshift, all sources at the same redshift.
 # Fixed concentration.
 
-mockname = 'isolated_gnfw_fixedz_wdyn_mock'
+mockname = 'isolated_gnfw_fixedz_mock'
 
 nlens = 1000 # sample size
 
@@ -24,7 +22,6 @@ np.random.seed(0)
 
 lmsps_piv = 11.5 # pivot point of stellar mass-halo mass and stellar mass-size relation
 lmsps_err = 0.15 # uncertainty on logM* from stellar population synthesis
-vdisp_err = 10. # uncertainty on velocity dispersion (in km/s)
 
 zd = 0.2 # lens redshift
 zs = 1. # source redshift
@@ -40,9 +37,6 @@ dds = wl_cosmology.Dang(zs, zd)
 rhoc = wl_cosmology.rhoc(zd) # critical density of the Universe at z=zd. Halo masses are defined as M200 wrt rhoc.
 
 arcsec2kpc = arcsec2rad * dd * 1000.
-
-fiber_radius_arcsec = 1. # radius of spectroscopic fiber (in arcsec)
-fiber_radius_kpc = fiber_radius_arcsec * arcsec2kpc
 
 # source distribution parameters
 sigma_eps = 0.25 # intrinsic scatter in shape distribution
@@ -92,9 +86,6 @@ lmstar_samp = lmsps_samp + laimf_samp
 # adds observational errors to the stellar mass measurements
 lmsps_obs = lmsps_samp + np.random.normal(0., lmsps_err, nlens)
 
-# generates observational errors on the central velocity dispersion
-vdisp_delta = np.random.normal(0., vdisp_err, nlens)
-
 # generates values of the inner dark matter slope
 gammadm_a, gammadm_b = (gammadm_min - gammadm_mu)/gammadm_sig, (gammadm_max - gammadm_mu)/gammadm_sig
 gammadm_samp = truncnorm.rvs(gammadm_a, gammadm_b, size=nlens)*gammadm_sig + gammadm_mu
@@ -124,15 +115,12 @@ output.attrs['gammadm_min'] = gammadm_min
 output.attrs['nser'] = nser
 output.attrs['nbkg'] = nbkg
 output.attrs['sigma_eps'] = sigma_eps
-output.attrs['fiber_radius_arcsec'] = fiber_radius_arcsec
-output.attrs['fiber_radius_kpc'] = fiber_radius_kpc
 
 # hyper-parameters
 output.attrs['lmsps_mu'] = lmsps_mu
 output.attrs['lmsps_sig'] = lmsps_sig
 output.attrs['lmsps_err'] = lmsps_err
 output.attrs['lmsps_piv'] = lmsps_piv
-output.attrs['vdisp_err'] = vdisp_err
 output.attrs['laimf_mu'] = laimf_mu
 output.attrs['laimf_sig'] = laimf_sig
 output.attrs['lm200_mu'] = lm200_mu
@@ -148,12 +136,6 @@ lens_model = wl_lens_models.GNFWdeV(z=zd, c200=c200)
 
 s_cr = lens_model.S_cr(zs) # lensing critical surface mass density (in M_Sun/Mpc^2)
 
-# grid for dynamics
-nr = 1000
-rgrid_scalefree = np.logspace(np.log10(1.01*sersic.rgrid_min), np.log10(0.99*sersic.rgrid_max), nr)
-m3d_stars_scalefree = sersic.fast_M3d(rgrid_scalefree, nser)
-
-vdisp_samp = np.zeros(nlens)
 for i in range(nlens):
     print(i)
 
@@ -179,25 +161,4 @@ for i in range(nlens):
     group.create_dataset('R_source', data=Rsource_deg)
     group.create_dataset('g_source', data=g_source)
     group.create_dataset('et_obs', data=et_obs)
-
-    # dynamics
-    r200 = (10.**lm200_samp[i]*3./200./(4.*np.pi)/rhoc)**(1./3.) * 1000. # virial radius in kpc
-    rs = r200/c200 # halo scale radius in kpc
-    gnfw_norm = 10.**lm200_samp[i] / gnfw.M3d(r200, rs, gammadm_samp[i])
-
-    rgrid_here = rgrid_scalefree * 10.**lreff_samp[i]
-    m3d_stars = 10.**lmstar_samp[i] * m3d_stars_scalefree
-    m3d_halo = np.zeros(nr)
-    for j in range(nr):
-        m3d_halo[j] = gnfw.M3d(rgrid_here[j], rs, gammadm_samp[i])
-    m3d_halo *= gnfw_norm
-
-    s2 = sigma_model.sigma2((rgrid_here, m3d_halo+m3d_stars), fiber_radius_kpc, 10.**lreff_samp[i], deVaucouleurs)
-    vdisp_samp[i] = (s2*G*M_Sun/kpc)**0.5/1e5
-
-vdisp_obs = vdisp_samp + vdisp_delta
-
-output.create_dataset('vdisp_samp', data=vdisp_samp)
-output.create_dataset('vdisp_obs', data=vdisp_obs)
-
 
