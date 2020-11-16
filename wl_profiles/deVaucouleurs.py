@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import quad
 import os
 from scipy.special import gamma as gfunc
-from scipy.interpolate import splrep, splev
+from scipy.interpolate import splrep, splev, splint
 import h5py
 
 
@@ -53,4 +53,66 @@ deV_M2d_spline = splrep(np.array([0.] + list(rr) + [1e10]), np.array([0.] + list
 
 def fast_M2d(x):
     return splev(x, deV_M2d_spline)
+
+def rho(r, reff): # 3D density from spherical deprojection
+    rhere = np.atleast_1d(r)
+    out = 0.*rhere
+    deriv = lambda R: -b(ndeV)/ndeV*(R/(reff))**(1/ndeV)/R*Sigma(R, reff)
+    for i in range(len(rhere)):
+        out[i] = -1./np.pi*quad(lambda R: deriv(R)/(R**2 - rhere[i]**2)**0.5, rhere[i], np.inf)[0]
+    return out
+
+grid3dfilename = os.environ.get('BHWLDIR') + '/wl_profiles/deV_3dgrids.hdf5'
+
+if not os.path.isfile(grid3dfilename):
+    print('calculating grid of enclosed 3d masses...')
+    M3d_grid = np.zeros(deV_grid_n)
+    rr_ext = np.append(0., rr)
+
+    rho_extgrid = np.zeros(deV_grid_n+1)
+    for i in range(deV_grid_n):
+        rho_extgrid[i+1] = rho(rr[i], 1.)
+    mprime_spline = splrep(rr_ext, 4.*np.pi*rho_extgrid*rr_ext**2)
+    rho_grid = rho_extgrid[1:]
+    for i in range(deV_grid_n):
+        M3d_grid[i] = splint(0., rr[i], mprime_spline)
+
+    grid_file = h5py.File(grid3dfilename, 'w')
+    grid_file.create_dataset('m3d_grid', data=M3d_grid)
+    grid_file.create_dataset('rho_grid', data=rho_grid)
+    grid_file.create_dataset('r_grid', data=rr)
+    grid_file.close()
+
+else:
+    grid_file = h5py.File(grid3dfilename, 'r')
+    M3d_grid = grid_file['m3d_grid'][()].copy()
+    rho_grid = grid_file['rho_grid'][()].copy()
+    grid_file.close()
+
+rho_spline = splrep(rr, rho_grid)
+M3d_spline = splrep(rr, M3d_grid)
+
+def fast_M3d(x): # 3d mass enclosed within radius x=r/reff, normalized to unit total mass.
+
+    xarr = np.atleast_1d(x)
+    oarr = splev(xarr, M3d_spline)
+
+    oob_up = xarr > rgrid_max
+    oob_dw = xarr < rgrid_min
+    oarr[oob_up] = 1.
+    oarr[oob_dw] = 0.
+
+    return oarr
+
+def fast_rho(x, ndeV):
+
+    xarr = np.atleast_1d(x)
+    oarr = splev(xarr, rho_spline)
+
+    oob_up = xarr > rgrid_max
+    oob_dw = xarr < rgrid_min
+    oarr[oob_up] = 0.
+    oarr[oob_dw] = 0.
+
+    return oarr
 

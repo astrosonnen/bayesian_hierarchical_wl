@@ -173,7 +173,7 @@ def fast_rho(x, nser):
 
     oob_up = xarr > rgrid_max
     oob_dw = xarr < rgrid_min
-    oarr[oob_up] = 1.
+    oarr[oob_up] = 0.
     oarr[oob_dw] = 0.
 
     return oarr
