@@ -31,7 +31,7 @@ def density_NFW( r, M200, c200, Rs):
     return M200 / (4.*np.pi * g_NFW(c200) * r * (r+Rs)*(r+Rs) )
 
 def radius_NFW( M200, redshift=0.):  # R200 radius in kpc
-    rhoc = 200. * wl_cosmology.rhoc(redshift, cosmo=default_cosmo)
+    mean_density = 200. * wl_cosmology.rhoc(redshift, cosmo=default_cosmo)
     return ( 3./4./np.pi * M200 / mean_density )**(1./3.) * 1000.
 
 def contract_enclosed_mass( mass_DM, mass_bar, f_bar=0.157 ):
