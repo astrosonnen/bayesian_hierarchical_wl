@@ -97,11 +97,8 @@ def projected_density_integrate( R, func_dens, R200, numBins=1000 ):
 
 def projected_density_NFW( R, M200, c200, Rs ):
     r = np.atleast_1d( R )
-    proj_den = r.copy()
-    for i in range( 0, len(r) ):
-        lim = np.pi / 2.
-        proj_den[i] = quad( lambda theta: np.cos(theta)*(np.cos(theta) + r[i]/Rs)**-2, 0., lim )[0]
-    return proj_den * M200 / (2.*np.pi * Rs**2 * g_NFW(c200))
+    nfw_norm = M200/nfw.M3d(c200*Rs, Rs)
+    return nfw_norm*nfw.Sigma(r, Rs)
 
 def projected_density_NFW_contracted( R, M200, c200, Rs, density_increase ):
     r = np.atleast_1d( R )
@@ -111,7 +108,7 @@ def projected_density_NFW_contracted( R, M200, c200, Rs, density_increase ):
         proj_den[i] = quad( lambda theta: density_increase(r[i]/np.cos(theta)) * np.cos(theta)*(np.cos(theta) + r[i]/Rs)**-2, 0., lim, epsrel=1.e-4 )[0]
     return proj_den * M200 / (2.*np.pi * Rs**2 * g_NFW(c200))
 
-
+"""
 
 # calculate an interpolation table for the contraction
 grid_Mstar_M200 = np.logspace( -2.7, -0.2, 26 )
@@ -249,3 +246,5 @@ def fast_Sigma( R, Mstar, Mhalo, Reff, R200, Rs ):
     nfw_norm = Mhalo / gnfw.M3d( R200, Rs, 1.0 )
     nfw_contribution = nfw_norm * gnfw.fast_Sigma( R, Rs, 1.0 )
     return nfw_contribution * fast_Sigma_factor( R, Mstar, Mhalo, Reff, R200 )
+
+"""
