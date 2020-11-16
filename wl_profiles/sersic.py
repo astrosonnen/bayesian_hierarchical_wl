@@ -37,9 +37,9 @@ nn = np.logspace(np.log10(ngrid_min), np.log10(ngrid_max), ngrid_n)
 
 axes = {0: splrep(rr, np.arange(rgrid_n)), 1: splrep(nn, np.arange(ngrid_n))}
 
-gridname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m2d_grid.hdf5'
+grid2dfilename = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m2d_grid.hdf5'
 
-if not os.path.isfile(gridname):
+if not os.path.isfile(grid2dfilename):
     print('calculating grid of enclosed projected masses...')
     M2d_grid = np.zeros((rgrid_n, ngrid_n))
 
@@ -47,11 +47,11 @@ if not os.path.isfile(gridname):
         for j in range(ngrid_n):
             M2d_grid[i, j] = M2d(rr[i], nn[j], 1.)
 
-    grid_file = h5py.File(gridname, 'w')
+    grid_file = h5py.File(grid2dfilename, 'w')
     grid_file.create_dataset('grid', data=M2d_grid)
     grid_file.close()
 else:
-    grid_file = h5py.File(gridname, 'r')
+    grid_file = h5py.File(grid2dfilename, 'r')
     M2d_grid = grid_file['grid'][()].copy()
     grid_file.close()
 
@@ -83,34 +83,41 @@ def fast_M2d(x, nser):
     return oarr
 
 def rho(r, nser, reff): # spherical deprojection
-
+    rhere = np.atleast_1d(r)
+    out = 0.*rhere
     deriv = lambda R: -b(nser)/nser*(R/(reff))**(1/nser)/R*Sigma(R, nser, reff)
-    return -1./np.pi*quad(lambda R: deriv(R)/(R**2 - r**2)**0.5, r, np.inf)[0]
+    for i in range(len(rhere)):
+        out[i] = -1./np.pi*quad(lambda R: deriv(R)/(R**2 - rhere[i]**2)**0.5, rhere[i], np.inf)[0]
+    return out
 
-m3dgridname = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_m3d_grid.hdf5'
+grid3dfilename = os.environ.get('BHWLDIR') + '/wl_profiles/sersic_3dgrids.hdf5'
 
-if not os.path.isfile(m3dgridname):
+if not os.path.isfile(grid3dfilename):
     print('calculating grid of enclosed 3d masses...')
     M3d_grid = np.zeros((rgrid_n, ngrid_n))
+    rho_grid = np.zeros((rgrid_n, ngrid_n))
     rr_ext = np.append(0., rr)
 
     for j in range(ngrid_n):
-        rho_grid = np.zeros(rgrid_n+1)
+        rho_gridhere = np.zeros(rgrid_n+1)
         for i in range(rgrid_n):
-            rho_grid[i+1] = rho(rr[i], nn[j], 1.)
-            mprime_spline = splrep(rr_ext, 4.*np.pi*rho_grid*rr_ext**2)
+            rho_gridhere[i+1] = rho(rr[i], nn[j], 1.)
+        mprime_spline = splrep(rr_ext, 4.*np.pi*rho_gridhere*rr_ext**2)
+        rho_grid[:, j] = rho_gridhere[1:]
         for i in range(rgrid_n):
             M3d_grid[i, j] = splint(0., rr[i], mprime_spline)
 
-    m3d_grid_file = h5py.File(m3dgridname, 'w')
-    m3d_grid_file.create_dataset('m3d_grid', data=M3d_grid)
-    m3d_grid_file.create_dataset('r_grid', data=rr)
-    m3d_grid_file.create_dataset('nser_grid', data=nn)
-    m3d_grid_file.close()
+    grid_file = h5py.File(grid3dfilename, 'w')
+    grid_file.create_dataset('m3d_grid', data=M3d_grid)
+    grid_file.create_dataset('rho_grid', data=rho_grid)
+    grid_file.create_dataset('r_grid', data=rr)
+    grid_file.create_dataset('nser_grid', data=nn)
+    grid_file.close()
 else:
-    m3d_grid_file = h5py.File(m3dgridname, 'r')
-    M3d_grid = m3d_grid_file['m3d_grid'][()].copy()
-    m3d_grid_file.close()
+    grid_file = h5py.File(grid3dfilename, 'r')
+    M3d_grid = grid_file['m3d_grid'][()].copy()
+    rho_grid = grid_file['rho_grid'][()].copy()
+    grid_file.close()
 
 M3d_interp = ndinterp.ndInterp(axes, M3d_grid, order=3)
 
