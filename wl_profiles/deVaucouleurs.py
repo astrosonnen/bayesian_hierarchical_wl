@@ -104,10 +104,10 @@ def fast_M3d(x): # 3d mass enclosed within radius x=r/reff, normalized to unit t
 
     return oarr
 
-def fast_rho(x, ndeV):
+def fast_rho(R, Re):
 
-    xarr = np.atleast_1d(x)
-    oarr = splev(xarr, rho_spline)
+    xarr = np.atleast_1d(R/Re)
+    oarr = splev(xarr, rho_spline) / Re**3
 
     oob_up = xarr > rgrid_max
     oob_dw = xarr < rgrid_min
