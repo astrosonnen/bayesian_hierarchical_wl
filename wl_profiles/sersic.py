@@ -119,6 +119,7 @@ else:
     rho_grid = grid_file['rho_grid'][()].copy()
     grid_file.close()
 
+rho_interp = ndinterp.ndInterp(axes, rho_grid, order=3)
 M3d_interp = ndinterp.ndInterp(axes, M3d_grid, order=3)
 
 def fast_M3d(x, nser): # 3d mass enclosed within radius x=r/reff, normalized to unit total mass.
@@ -149,4 +150,31 @@ def fast_M3d(x, nser): # 3d mass enclosed within radius x=r/reff, normalized to 
 
     return oarr
 
+def fast_rho(x, nser):
+
+    xarr = np.atleast_1d(x)
+    narr = np.atleast_1d(nser)
+
+    xlen = len(xarr)
+    nlen = len(narr)
+
+    if xlen == nlen:
+        point = np.array((xarr, narr)).reshape((2, xlen)).T
+    elif nlen == 1:
+        point = np.array((xarr, nser*np.ones(xlen))).reshape((2, xlen)).T
+    elif xlen == 1:
+        xarr = x*np.ones(nlen)
+        point = np.array((xarr, narr)).reshape((2, nlen)).T
+    else:
+        print('unable to match shapes of x and nser')
+        df
+
+    oarr = rho_interp.eval(point)
+
+    oob_up = xarr > rgrid_max
+    oob_dw = xarr < rgrid_min
+    oarr[oob_up] = 1.
+    oarr[oob_dw] = 0.
+
+    return oarr
 
