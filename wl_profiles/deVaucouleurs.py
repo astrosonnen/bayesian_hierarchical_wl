@@ -8,9 +8,9 @@ import h5py
 
 ndeV = 4.
 
-deV_grid_rmin = 0.001
-deV_grid_rmax = 1000.
-deV_grid_n = 1000
+rgrid_min = 0.001
+rgrid_max = 1000.
+rgrid_n = 1000
 
 def b(n):
     return 2*n - 1./3. + 4/405./n + 46/25515/n**2
@@ -32,11 +32,11 @@ gridname = os.environ.get('BHWLDIR') + '/wl_profiles/deV_m2d_grid.hdf5'
 
 if not os.path.isfile(gridname):
     print('calculating grid of enclosed projected masses...')
-    rr = np.logspace(np.log10(deV_grid_rmin), np.log10(deV_grid_rmax), deV_grid_n)
+    rr = np.logspace(np.log10(rgrid_min), np.log10(rgrid_max), rgrid_n)
 
     M2d_grid = 0.*rr
 
-    for j in range(deV_grid_n):
+    for j in range(rgrid_n):
         M2d_grid[j] = M2d(rr[j], 1.)
 
     grid_file = h5py.File(gridname, 'w')
@@ -66,15 +66,15 @@ grid3dfilename = os.environ.get('BHWLDIR') + '/wl_profiles/deV_3dgrids.hdf5'
 
 if not os.path.isfile(grid3dfilename):
     print('calculating grid of enclosed 3d masses...')
-    M3d_grid = np.zeros(deV_grid_n)
+    M3d_grid = np.zeros(rgrid_n)
     rr_ext = np.append(0., rr)
 
-    rho_extgrid = np.zeros(deV_grid_n+1)
-    for i in range(deV_grid_n):
+    rho_extgrid = np.zeros(rgrid_n+1)
+    for i in range(rgrid_n):
         rho_extgrid[i+1] = rho(rr[i], 1.)
     mprime_spline = splrep(rr_ext, 4.*np.pi*rho_extgrid*rr_ext**2)
     rho_grid = rho_extgrid[1:]
-    for i in range(deV_grid_n):
+    for i in range(rgrid_n):
         M3d_grid[i] = splint(0., rr[i], mprime_spline)
 
     grid_file = h5py.File(grid3dfilename, 'w')
