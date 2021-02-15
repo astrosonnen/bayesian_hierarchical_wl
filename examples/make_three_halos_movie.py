@@ -9,6 +9,9 @@ nsource = 400
 nframes = 30
 fsize = 20
 
+seedno = 0
+np.random.seed(seedno)
+
 # lens and source redshift (fixed for all)
 zd = 0.3
 zs = 1.0
@@ -135,7 +138,7 @@ for frameno in range(nframes):
     pylab.xticks(())
     pylab.yticks(())
     pylab.axis('off')
-    pylab.savefig('frames/three_lenses_%02d.png'%frameno)
+    pylab.savefig('figs/three_lenses_%02d.png'%frameno)
     pylab.close()
 
 
