@@ -66,7 +66,7 @@ gamma_pa[gamma_pa<0.] += 2.*np.pi
 
 # lensing-induced ellipticity
 q = (1. - kappa - gamma)/(1. - kappa + gamma)
-crazy_q = 0.8*q # enhanced ellipticity
+crazy_q = 1. - 10.*(1.-q) # enhanced ellipticity
 
 ncirc = 101
 phi_circ = 2.*np.pi*np.linspace(0., 1., ncirc)
