@@ -516,7 +516,7 @@ class NFWSersic:
     def get_source_gammat(self):
         self.sources['gammat'] = (2.*self.S_s*(2.*nfw.gfunc(self.sources['r']/self.rs_ang)/(self.sources['r']/self.rs_ang)**2 + \
                              - nfw.Ffunc(self.sources['r']/self.rs_ang)) + \
-                self.S_bulge*(sersic.fast_M2d(self.sources['r']/self.reff_ang, self.nser)/(self.sources['r']/self.reff_ang)**2/pi - \
+                self.S_bulge*(sersic.M2d(self.sources['r'], self.nser, self.reff_ang)/(self.sources['r']/self.reff_ang)**2/pi - \
                               sersic.Sigma(self.sources['r']/self.reff_ang, self.nser, 1.))) / self.sources['s_cr']
 
     def get_source_kappa(self):
@@ -525,7 +525,7 @@ class NFWSersic:
 
     def gammat(self, theta, z):
         return (2.*self.S_s*(2.*nfw.gfunc(theta/self.rs_ang)/(theta/self.rs_ang)**2 - nfw.Ffunc(theta/self.rs_ang)) + \
-                self.S_bulge*(sersic.fast_M2d(theta/self.reff_ang, self.nser)/(theta/self.reff_ang)**2/pi - \
+                self.S_bulge*(sersic.M2d(theta, self.nser, self.reff_ang)/(theta/self.reff_ang)**2/pi - \
                               sersic.Sigma(theta/self.reff_ang, self.nser, 1.))) / self.S_cr(z)
 
     def gamma1(self, r, phi, z):
@@ -539,11 +539,11 @@ class NFWSersic:
 
     def m(self, theta, z):
         return (4.*self.S_s*self.rs_ang**2*nfw.gfunc(theta/self.rs_ang) + \
-                self.S_bulge/pi*self.reff_ang**2*sersic.fast_M2d(theta/self.reff_ang, self.nser)) / self.S_cr(z)
+                self.S_bulge/pi*self.reff_ang**2*sersic.M2d(theta, self.nser, self.reff_ang)) / self.S_cr(z)
 
     def alpha(self, theta, z):
         return (4.*self.S_s*theta/(theta/self.rs_ang)**2*nfw.gfunc(theta/self.rs_ang) + \
-               self.S_bulge/pi*theta/(theta/self.reff_ang)**2*sersic.fast_M2d(theta/self.reff_ang, self.nser)) / self.S_cr(z)
+               self.S_bulge/pi*theta/(theta/self.reff_ang)**2*sersic.M2d(theta, self.nser, self.reff_ang)) / self.S_cr(z)
 
     def mu(self, theta, z):
         return ((1 - self.kappa(theta, z))**2 - self.gammat(theta, z)**2)**(-1)
@@ -585,7 +585,7 @@ class NFWSersic:
 
     def Sigmabar(self, theta):
         return (4.*self.S_s*nfw.gfunc(theta/self.rs_ang)/(theta/self.rs_ang)**2 + \
-                self.S_bulge*(sersic.fast_M2d(theta/self.reff_ang, self.nser)/(theta/self.reff_ang)**2/pi)) /1e12
+                self.S_bulge*(sersic.M2d(theta, self.nser, self.reff_ang)/(theta/self.reff_ang)**2/pi)) /1e12
 
     def DeltaSigma(self, theta):
         return (self.Sigmabar(theta) - self.Sigma(theta))#/cosmo['h']
@@ -812,7 +812,7 @@ class AdcontrSersicCheat:
     def get_source_gammat(self):
         self.sources['gammat'] = (self.S_h/np.pi/(self.sources['r']/self.rs_ang)**2*adcontr.M2d(self.sources['r'], self.fbar, self.reff_ang, self.rs_ang, self.c200, self.nu) + \
         -self.S_h*adcontr.Sigma(self.sources['r'], self.fbar, self.reff_ang, self.rs_ang, self.c200, self.nu) + \
-                self.S_bulge*(sersic.fast_M2d(self.sources['r']/self.reff_ang, self.nser)/(self.sources['r']/self.reff_ang)**2/pi - \
+                self.S_bulge*(sersic.M2d(self.sources['r'], self.nser, self.reff_ang)/(self.sources['r']/self.reff_ang)**2/pi - \
                               sersic.Sigma(self.sources['r']/self.reff_ang, self.nser, 1.))) / self.sources['s_cr']
 
     def get_source_kappa(self):
