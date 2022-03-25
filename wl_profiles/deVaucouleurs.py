@@ -6,6 +6,8 @@ from scipy.interpolate import splrep, splev, splint
 import h5py
 
 
+thisdir = os.path.dirname(os.path.abspath(__file__))
+
 ndeV = 4.
 
 rgrid_min = 0.001
@@ -28,7 +30,7 @@ def M2d(R, Re):
         out[i] = 2*np.pi*quad(lambda r: r*Sigma(r, Re), 0., R[i])[0]
     return out
 
-gridname = os.environ.get('BHWLDIR') + '/wl_profiles/deV_m2d_grid.hdf5'
+gridname = thisdir + '/deV_m2d_grid.hdf5'
 
 if not os.path.isfile(gridname):
     print('calculating grid of enclosed projected masses...')
@@ -62,7 +64,7 @@ def rho(r, reff): # 3D density from spherical deprojection
         out[i] = -1./np.pi*quad(lambda R: deriv(R)/(R**2 - rhere[i]**2)**0.5, rhere[i], np.inf)[0]
     return out
 
-grid3dfilename = os.environ.get('BHWLDIR') + '/wl_profiles/deV_3dgrids.hdf5'
+grid3dfilename = thisdir + '/deV_3dgrids.hdf5'
 
 if not os.path.isfile(grid3dfilename):
     print('calculating grid of enclosed 3d masses...')

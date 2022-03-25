@@ -7,7 +7,7 @@ import numpy as np
 M3d1 = np.log(2.) - 0.5
 
 def gfunc(x):
-    xx = np.atleast_1d(x)
+    xx = np.atleast_1d(x.copy())
     g = xx*.0
     arr = xx[xx<1]
     g[xx<1] = np.log(arr/2) + 1/np.sqrt(1 - arr**2)*np.arccosh(1/arr)
@@ -18,7 +18,7 @@ def gfunc(x):
     return g
 
 def Ffunc(x):
-    xx = np.atleast_1d(x)
+    xx = np.atleast_1d(x.copy())
     c1 = xx<1
     c2 = xx==1
     c3 = xx>1
@@ -28,7 +28,7 @@ def Ffunc(x):
     return xx
 
 def hfunc(x):
-    xx = np.atleast_1d(x)
+    xx = np.atleast_1d(x.copy())
     h = xx*.0
     arr = xx[xx<1]
     h[xx<1] = np.log(arr/2)**2 - np.arccosh(1/arr)**2
