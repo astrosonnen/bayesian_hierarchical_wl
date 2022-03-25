@@ -19,13 +19,14 @@ def gfunc(x):
 
 def Ffunc(x):
     xx = np.atleast_1d(x.copy())
+    F = 0.*xx
     c1 = xx<1
     c2 = xx==1
     c3 = xx>1
-    xx[c1] = 1/(xx[c1]**2-1)*(1 - 1/np.sqrt(1-xx[c1]**2)*np.arccosh(1/xx[c1]))
-    xx[c2] = 1/3.
-    xx[c3] = 1/(xx[c3]**2-1)*(1 - 1/np.sqrt(xx[c3]**2-1)*np.arccos(1/xx[c3]))
-    return xx
+    F[c1] = 1/(xx[c1]**2-1)*(1 - 1/np.sqrt(1-xx[c1]**2)*np.arccosh(1/xx[c1]))
+    F[c2] = 1/3.
+    F[c3] = 1/(xx[c3]**2-1)*(1 - 1/np.sqrt(xx[c3]**2-1)*np.arccos(1/xx[c3]))
+    return F
 
 def hfunc(x):
     xx = np.atleast_1d(x.copy())
@@ -35,7 +36,6 @@ def hfunc(x):
     arr = xx[xx>=1]
     h[xx>=1] = np.log(arr/2)**2 - np.arccos(1/arr)**2
     return h
-
 
 def rho(r,rs):
     return 1./(r/rs)/(1 + r/rs)**2/(4*np.pi*rs**3)/M3d1
